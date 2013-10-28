@@ -11,7 +11,7 @@
 	<script src="js/watch.js" type="text/javascript" charset="utf-8"></script>
 	<script src="js/compass.js" type="text/javascript" charset="utf-8"></script>
 	<script src="js/jquery.timeago.js" type="text/javascript" charset="utf-8"></script>
-	<script src="commons.js" type="text/javascript" charset="utf-8"></script>
+	<script src="js/commons.js" type="text/javascript" charset="utf-8"></script>
 </head>
 <body>
     <!-- Navigation bar. common for all pages -->
@@ -28,7 +28,7 @@
                                 </a>
                                 <ul class="dropdown-menu">
                                     <li>
-                                        <a href="/#logout">Sign out</a>
+                                        <a href="#logout">Sign out</a>
                                     </li>
                                 </ul>
                             </li>
@@ -92,8 +92,8 @@
                    <h3><%= model.obj.title %></h3>
                    <p><%= model.obj.summary %></p>
                    <p>
-                       <a id="deleteMovieBtn" class="btn btn-danger" href="/#movie/delete/<%= model.obj.id %>">Delete this movie!</a>&nbsp;
-                       <a class="btn btn-info" href="/#movie/update/<%= model.obj.id %>">Update this movie</a>
+                       <a id="deleteMovieBtn" class="btn btn-danger" href="#movie/delete/<%= model.obj.id %>">Delete this movie!</a>&nbsp;
+                       <a class="btn btn-info" href="#movie/update/<%= model.obj.id %>">Update this movie</a>
                    </p>
                </div>
            </div>
@@ -118,7 +118,7 @@
                            <p class="span12"><%= review.obj.comment %></p>
                        </div>
                        <div class="row-fluid">
-                           <a href="/#movie/<%= model.id %>/review/delete/<%= review.obj.id %>" class="btn btn-small btn-danger deleteReviewBtn">
+                           <a href="#movie/<%= model.obj.id %>/review/delete/<%= review.obj.id %>" class="btn btn-small btn-danger deleteReviewBtn">
                                Delete review
                            </a>
                        </div>
@@ -135,7 +135,7 @@
                    <textarea rows="3" name="review[comment]" id="review_comment" cols="40" class="span9">
                    </textarea>
                </div>
-               <a class="btn" id="create-review-btn" href="/#review/create/<%=model.obj.id%>">Create Review</a>
+               <a class="btn" id="create-review-btn" href="#review/create/<%=model.obj.id%>">Create Review</a>
            </div>
         </div>
     </script>
@@ -168,6 +168,43 @@
             <a id="submit" class="btn btn-primary">Create Movie</a>
             <a class="btn" id="cancel" href="#">Cancel</a>
         </form>
+    </div>
+    </script>
+    
+    <script type="text/template" id="update-movie-template">
+    <div>
+        <div class="row-fluid">
+            <a href="/">List of movies</a>
+        </div>
+        <h3>Update movie</h3>
+        <form enctype="multipart/form-data" method="POST" name="update_movie">
+            <div class="control-group">
+                <label for="movie_title" class="control-label">Title</label>
+                <div class="controls">
+                    <input type="text" required="true" size="30" name="movie[title]" id="movie_title" class="text_field" value="<%= model.obj.title%>">
+                </div>
+            </div>
+            <div class="control-group">
+                <label for="movie_summary" class="control-label">Summary</label>
+                <div class="controls">
+                    <input type="text" required="true" size="30" name="movie[summary]" id="movie_summary" class="text_field" value="<%= model.obj.summary%>">
+                </div>
+            </div>
+            <div class="control-group">
+                <label for="movie_img" class="control-label">Img</label>
+                <div class="controls">
+                    <input type="file" required="true" name="movie[img]" id="movie_img">
+                </div>
+            </div>
+            <a id="updateMovieBtn" class="btn btn-primary">Update Movie</a>
+            <a class="btn" id="cancel" href="#">Cancel</a>
+        </form>
+        <div class="row">
+            <div class="span3">
+                Existing image: (will be replaced only if you submit a new image)<br>
+                <img src="<%= model.obj.img_url %>">
+            </div>
+        </div>
     </div>
     </script>
     
@@ -224,11 +261,67 @@
                         alert("You need to log in first.");
                         window.location.href = "/";
                     } else {
-                        /*
-                        TODO: validate all user input. if user input fails,
-                        show an alert. else create movie and redirect to home page.
-                        */
-                        
+                        var title = $.trim($("#movie_title").val());
+                        var summary = $.trim($("#movie_summary").val());
+                        var img = $.trim($("#movie_img").val());
+                        if (title == "" || summary == "" || img == "") {
+                            alert("You must provide a title, summary and an image.");
+                        } else {
+                            $("#submit").attr('disabled', 'disabled');
+                            var newMovie = new Movie;
+                            newMovie.set({
+                                'access_token': token,
+                                'movie[title]': title,
+                                'movie[summary]': summary,
+                                'movie[img]': document.getElementById('movie_img').files[0]
+                            });
+                            newMovie.save({
+                                success: function(data) {
+                                    window.location.href = "/";
+                                },
+                                error: function(error) {
+                                    console.log(error);
+                                }
+                            });
+                        }
+                    }
+                }
+            },
+        });
+        var UpdateMovieView = function(){};
+        UpdateMovieView.prototype = new Compass.View({
+            template: $("#update-movie-template"),
+            events : {
+                'click #updateMovieBtn' : function createMovieEvent(bindedModel) {
+                    var token = getCookie("access_token");
+                    if (token == null || token == "") {
+                        alert("You need to log in first.");
+                    } else {
+                        var title = $.trim($("#movie_title").val());
+                        var summary = $.trim($("#movie_summary").val());
+                        if (title == "" || summary == "") {
+                            alert("You must provide a title and summary.");
+                        } else {
+                            $("#updateMovieBtn").attr('disabled', 'disabled');
+                            var newData = {
+                                'access_token': token,
+                                'movie[title]': title,
+                                'movie[summary]': summary,
+                            };
+                            if ($.trim($("#movie_img").val())) {
+                                newData['movie[img]'] = document.getElementById('movie_img').files[0];
+                            }
+                            bindedModel.set(newData);
+                            bindedModel.sync({
+                                id: bindedModel.obj.id+".json",
+                                success: function() {
+                                    window.location.href = "#movies/"+bindedModel.obj.id;
+                                },
+                                error: function(error) {
+                                    console.log(error);
+                                }
+                            });
+                        }
                     }
                 }
             },
@@ -243,12 +336,12 @@
             $("#movies-div").append(template);
             if (currentPageNumber == 1) {
                 $("#prevLink").hide();
-                $("#nextLink").attr("href", "/#page/"+2).show();
+                $("#nextLink").attr("href", "#page/"+2).show();
             } else {
                 var prevNum = currentPageNumber - 1;
                 var nextNum = currentPageNumber + 1;
-                $("#prevLink").attr("href", "/#page/"+prevNum).show()
-                $("#nextLink").attr("href", "/#page/"+nextNum).show();
+                $("#prevLink").attr("href", "#page/"+prevNum).show()
+                $("#nextLink").attr("href", "#page/"+nextNum).show();
             }
             $(".movieImage").click(function() {
                 window.location.hash = "#movies/"+$(this).data("movieid");
@@ -336,45 +429,68 @@
                     });
                 },
                 delete_movie: function(params) {
-                    $("#deleteMovieBtn").text("Deleting...").attr("disabled", "disabled");
+                    $("#deleteMovieBtn").attr("disabled", "disabled");
                     var movieid = params.id;
-                    var token = getCookie("access_token");
-                    // we want the user id so that we know whether he is authorized to delete the movie
-                    $.ajax({
-                        type: "get",
-                        url: "http://cs3213.herokuapp.com/users/current.json?access_token="+token,
-                        success: function(data, textStatus, jqXHR) {
-                            var uid = data.id;
-                            var movieToBeDeleted = new Movie;
-                            movieToBeDeleted.get({
-                                id: movieid+".json", 
-                                success: function(data) {
-                                    if (uid != movieToBeDeleted.obj.user.id) {
-                                        alert("You are not authorized to delete this movie");
-                                        $("#deleteMovieBtn").text("Delete this movie!").removeAttr("disabled");
-                                    } else {
-                                        movieToBeDeleted.set({
-                                            'access_token': token
-                                        });
-                                        movieToBeDeleted.destroy({
-                                            id: movieToBeDeleted.obj.id+".json",
-                                            success: function() {
-                                                window.location.href = "/";
-                                            },
-                                            error: function(error) {
-                                                console.log("error attempting to delete obj: "+error);
-                                                $("#deleteMovieBtn").text("Delete this movie!").removeAttr("disabled");
-                                            }
-                                        });
+                    var token = getCookie("access_token");                    
+                    if (token == null || token == "") {
+                        alert("You need to log in first.");
+                        window.location.href = "#movies/"+movieid;
+                    } else {
+                        // we want the user id so that we know whether he is authorized to delete the movie
+                        $.ajax({
+                            type: "get",
+                            url: "http://cs3213.herokuapp.com/users/current.json?access_token="+token,
+                            success: function(data, textStatus, jqXHR) {
+                                var uid = data.id;
+                                var movieToBeDeleted = new Movie;
+                                movieToBeDeleted.get({
+                                    id: movieid+".json", 
+                                    success: function(data) {
+                                        if (uid != movieToBeDeleted.obj.user.id) {
+                                            alert("You are not authorized to delete this movie");
+                                            $("#deleteMovieBtn").removeAttr("disabled");
+                                        } else {
+                                            movieToBeDeleted.set({
+                                                'access_token': token
+                                            });
+                                            movieToBeDeleted.destroy({
+                                                id: movieToBeDeleted.obj.id+".json",
+                                                success: function() {
+                                                    window.location.href = "/";
+                                                },
+                                                error: function(error) {
+                                                    console.log("error attempting to delete obj: "+error);
+                                                    alert("error: ", error);
+                                                    $("#deleteMovieBtn").removeAttr("disabled");
+                                                }
+                                            });
+                                        }
                                     }
-                                }
-                            });
-                        }
-                    });
+                                });
+                            }
+                        });
+                    }
                 },
                 update_movie: function(params) {
                     var movieid = params.id;
-                    // TODO: update this movie
+                    var updateMovieView = new UpdateMovieView;
+                    var movieToBeUpdated = new Movie;
+                    movieToBeUpdated.get({
+                        id: movieid+".json",
+                        success: function(data) {
+                            $("#movies-div").empty();
+                            $("#prevLink").hide();
+                            $("#nextLink").hide();
+                            updateMovieView.bindModel({
+                                model: movieToBeUpdated
+                            });
+                            $("#movies-div").append(updateMovieView.render());
+                            updateMovieView.delegateEvents();
+                        },
+                        error: function(errorMsg) {
+                            console.log(errorMsg);
+                        }
+                    });
                 },
                 new_movie: function() {
                     var createMovieView = new CreateMovieView;
@@ -382,27 +498,33 @@
                     $("#prevLink").hide();
                     $("#nextLink").hide();
                     $("#movies-div").append(createMovieView.render());
-                     createMovieView.delegateEvents();
+                    createMovieView.delegateEvents();
                 },
                 delete_review: function(params) {
                     var movieid = params.mid;
                     var reviewid = params.rid;
-                    $(".deleteReviewBtn").text("Deleting...").attr("disabled", "disabled");
                     var token = getCookie("access_token");
-                    // There's no API to get a Review Model. hence I can't use our model's destroy() method.
-                    // Can only do it this way.
-                    $.ajax({
-                        type: 'delete',
-                        url: 'http://cs3213.herokuapp.com/movies/'+movieid+'/reviews/'+reviewid+'.json',
-                        data: {'access_token': token},
-                        error: function(jqXHR, textStatus, error) {
-                            console.log(textStatus + ": " + error);
-                            alert(error);
-                        },
-                        success: function(data, textStatus, jqXHR) {
-                           window.location.href = "/#movies/"+mid;
-                        }
-                    });
+                    if (token == null || token == "") {
+                        alert("You need to log in first.");
+                        window.location.href = "#movies/"+movieid;
+                    } else {
+                        $(".deleteReviewBtn").attr("disabled", "disabled");
+                        // There's no API to get a Review Model. hence I can't use our model's destroy() method.
+                        // Can only do it this way.
+                        $.ajax({
+                            type: 'delete',
+                            url: 'http://cs3213.herokuapp.com/movies/'+movieid+'/reviews/'+reviewid+'.json',
+                            data: {'access_token': token},
+                            error: function(jqXHR, textStatus, error) {
+                                console.log(textStatus + ": " + error);
+                                alert(error);
+                                $(".deleteReviewBtn").removeAttr("disabled");
+                            },
+                            success: function(data, textStatus, jqXHR) {
+                               window.location.href = "/#movies/"+mid;
+                            }
+                        });
+                    }
                 },
                 logout: function() {
                     deleteCookie("access_token");
@@ -410,7 +532,39 @@
                 },
                 create_review: function(params) {
                     var movieid = params.mid;
-                    // TODO: create new review in this movie
+                    var token = getCookie("access_token");                    
+                    if (token == null || token == "") {
+                        alert("You need to log in first.");
+                        return;
+                    } else {
+                        var comment = $.trim($("#review_comment").val());
+                        var score = $.trim($("#review_score").val());
+                        if(score < 1 || score > 100) {
+                            alert("Please enter a score between 1 and 100");
+                            window.location.href = "#movies/"+movieid;
+                        } else {
+                            var data = {
+                                'movie_id': movieid,
+                                'score': score,
+                                'comment': comment,
+                                'access_token': token
+                            };
+                            var url = "http://cs3213.herokuapp.com/movies/" + movieid + "/reviews.json";
+                            $.ajax({
+                                url:url,
+                                type:"POST",
+                                dataType:"json",
+                                headers: {'Content-Type':'application/json'},
+                                data:JSON.stringify(data),
+                                success: function(result) {
+                                    window.location.href = "#movies/"+ movieid;
+                                },
+                                error: function (xhr, status, err) {
+                                    console.log(xhr);
+                                }
+                            });
+                        }
+                    }
                 }
             }
         });
