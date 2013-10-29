@@ -91,7 +91,10 @@
                    <div class="well">
                        <div class="row-fluid">
                            <p class="span12">
-                               <strong>{{= review.obj.user.username }}</strong> reviewed about <abbr class="timeago" title="{{=review.obj.updated_at}}">time </abbr>.
+                                {{ if typeof review.obj.user != 'undefined' { }}
+                                    <strong>{{= review.obj.user.username }}</strong>
+                                {{ } }}
+                                &nbsp; reviewed about <abbr class="timeago" title="{{=review.obj.updated_at}}">time </abbr>.
                                <span class="label label-success pull-right">
                                    {{= review.obj.score }} points
                                </span>

@@ -136,6 +136,7 @@ $(document).ready(function() {
                             },
                             error: function(error) {
                                 console.log(error);
+                                alert(error);
                             }
                         });
                     }
@@ -344,7 +345,7 @@ $(document).ready(function() {
                             $(".deleteReviewBtn").removeAttr("disabled");
                         },
                         success: function(data, textStatus, jqXHR) {
-                            window.location.href = "/#movies/" + mid;
+                            window.location.href = "/#movies/" + movieid;
                         }
                     });
                 }
