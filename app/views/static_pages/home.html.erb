@@ -1,0 +1,194 @@
+<div id="wrapper" class="container">
+        <div class="navbar navbar-inverse">
+            <div class="navbar-inner navbar-fixed-top">
+                <div class="container">
+                    <a id="movies_path" class="brand" href="/">movies@pyramid3213</a>
+                    <div class="nav-collapse collapse">
+                        <ul class="nav pull-right">
+                            <li>
+                                <a id="signin" href="/oauth/login" style="display:none;">Sign in</a>
+                                <a id="acksignin" style="display:none;" class="dropdown-toggle" href="#" data-toggle="dropdown">
+                                </a>
+                                <ul class="dropdown-menu">
+                                    <li>
+                                        <a href="#logout">Sign out</a>
+                                    </li>
+                                </ul>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- End of navigation bar -->
+
+    <div id="indexContainer" class="container">
+        <div style="padding-top:3%;">
+            <div class="page-header row">
+                <h1 class="span10">Hot on Pyramid3213</h1>
+                <a id="new-movie" class="btn btn-primary" href="#new_movie">Add new movie</a>
+            </div>
+        </div>
+        <div id="pagination" class="row-fluid">
+            <a id="prevLink">&lt;&lt; Prev</a> <a id="nextLink">Next &gt;&gt;</a>
+        </div>
+        <div id="movies-div" class="row">
+        </div>
+    </div>
+    
+    <!-- index page. displaying all movies -->    
+    <script type="text/template" id="list-movies-template">
+        {{ _.each(model, function(movie) { }}
+            <div class="span3">
+                <h3>
+                    {{ if (movie.obj.title.length <= 15) { }}
+                        {{= movie.obj.title }}
+                    {{ } else { }}
+                        {{= movie.obj.title.substring(0,12) + "..." }}
+                    {{ } }}
+                </h3>
+                <img class="movieImage" data-movieid="{{= movie.obj.id }}" src="{{= movie.obj.img_url }}">
+                <p>Score:
+                    {{ if (movie.obj.avg_score != null) { }}
+                        {{= Math.round(movie.obj.avg_score * 100) / 100 }}
+                    {{ } else { }}
+                        0.0
+                    {{ } }} 
+                </p>
+            </div>
+        {{ }); }}
+    </script>
+    
+    <script type="text/template" id="single-movie-template">
+        <div class="row-fluid">
+           <a href="/" id="movies_path">movies</a> &gt;
+           {{= model.obj.title }}
+           <br><br>
+        </div>
+        <div class="row">
+           <div class="span3">
+               <img src="{{= model.obj.img_url }}">
+           </div>
+           <div class="span9">
+               <div>
+                   <h3>{{= model.obj.title }}</h3>
+                   <p>{{= model.obj.summary }}</p>
+                   <p>
+                       <a id="deleteMovieBtn" class="btn btn-danger" href="#movie/delete/{{= model.obj.id }}">Delete this movie!</a>&nbsp;
+                       <a class="btn btn-info" href="#movie/update/{{= model.obj.id }}">Update this movie</a>
+                   </p>
+               </div>
+           </div>
+        </div>
+        <div class="row-fluid">
+           <div class="row-fluid">
+               <h3 class="span12">Reviews</h3>
+           </div>
+           <div id="reviews-div">
+               <!-- loop through each review and display them -->
+               {{ _.each(model.obj.reviews, function(review) { }}
+                   <div class="well">
+                       <div class="row-fluid">
+                           <p class="span12">
+                               <strong>{{= review.obj.user.username }}</strong> reviewed about <abbr class="timeago" title="{{=review.obj.updated_at}}">time </abbr>.
+                               <span class="label label-success pull-right">
+                                   {{= review.obj.score }} points
+                               </span>
+                           </p>
+                       </div>
+                       <div class="row-fluid">
+                           <p class="span12">{{= review.obj.comment }}</p>
+                       </div>
+                       <div class="row-fluid">
+                           <a href="#movie/{{= model.obj.id }}/review/delete/{{= review.obj.id }}" class="btn btn-small btn-danger deleteReviewBtn">
+                               Delete review
+                           </a>
+                       </div>
+                   </div>
+               {{ }); }}
+           </div>
+           <div class="well">
+               <div id="new-review-input" class="row-fluid">
+                   <label for="review_score" class="span3">Score (1-100)</label>
+                   <input type="number" name="review[score]" id="review_score" class="span3">
+               </div>
+               <div class="row-fluid">
+                   <label for="review_comment" class="span3">Comment</label>
+                   <textarea rows="3" name="review[comment]" id="review_comment" cols="40" class="span9">
+                   </textarea>
+               </div>
+               <a class="btn" id="create-review-btn" href="#review/create/{{=model.obj.id}}">Create Review</a>
+           </div>
+        </div>
+    </script>
+    
+    <script type="text/template" id="create-movie-template">
+    <div>
+        <div class="row-fluid">
+            <a href="/">List of movies</a>
+        </div>
+        <h3>Create new movie</h3>
+        <form enctype="multipart/form-data" method="POST" name="movie">
+            <div class="control-group">
+                <label for="movie_title" class="control-label">Title</label>
+                <div class="controls">
+                    <input type="text" required="true" size="30" name="movie[title]" id="movie_title" class="text_field">
+                </div>
+            </div>
+            <div class="control-group">
+                <label for="movie_summary" class="control-label">Summary</label>
+                <div class="controls">
+                    <input type="text" required="true" size="30" name="movie[summary]" id="movie_summary" class="text_field">
+                </div>
+            </div>
+            <div class="control-group">
+                <label for="movie_img" class="control-label">Img</label>
+                <div class="controls">
+                    <input type="file" required="true" name="movie[img]" id="movie_img">
+                </div>
+            </div>
+            <a id="submit" class="btn btn-primary">Create Movie</a>
+            <a class="btn" id="cancel" href="#">Cancel</a>
+        </form>
+    </div>
+    </script>
+    
+    <script type="text/template" id="update-movie-template">
+    <div>
+        <div class="row-fluid">
+            <a href="/">List of movies</a>
+        </div>
+        <h3>Update movie</h3>
+        <form enctype="multipart/form-data" method="POST" name="update_movie">
+            <div class="control-group">
+                <label for="movie_title" class="control-label">Title</label>
+                <div class="controls">
+                    <input type="text" required="true" size="30" name="movie[title]" id="movie_title" class="text_field" value="{{= model.obj.title}}">
+                </div>
+            </div>
+            <div class="control-group">
+                <label for="movie_summary" class="control-label">Summary</label>
+                <div class="controls">
+                    <input type="text" required="true" size="30" name="movie[summary]" id="movie_summary" class="text_field" value="{{= model.obj.summary}}">
+                </div>
+            </div>
+            <div class="control-group">
+                <label for="movie_img" class="control-label">Img</label>
+                <div class="controls">
+                    <input type="file" required="true" name="movie[img]" id="movie_img">
+                </div>
+            </div>
+            <a id="updateMovieBtn" class="btn btn-primary">Update Movie</a>
+            <a class="btn" id="cancel" href="#">Cancel</a>
+        </form>
+        <div class="row">
+            <div class="span3">
+                Existing image: (will be replaced only if you submit a new image)<br>
+                <img src="{{= model.obj.img_url }}">
+            </div>
+        </div>
+    </div>
+    </script>
+    
+</body>
