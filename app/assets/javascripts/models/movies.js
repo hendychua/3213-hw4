@@ -50,6 +50,7 @@ $(document).ready(function() {
     // Instantiate all Models
     var Movie = function() {};
     Movie.prototype = new Compass.Model("http://cs3213.herokuapp.com/movies");
+    
     var Review = function() {};
     Review.prototype = new Compass.Model("http://cs3213.herokuapp.com/movies/");
 
@@ -60,16 +61,13 @@ $(document).ready(function() {
     ReviewsCollection.prototype = new Compass.Collection(Review);
 
     // Instantiate all Views
-    var ListMoviesView = function() {};
-    ListMoviesView.prototype = new Compass.View({
+    var ListMoviesView = Compass.View.extend({
         template: $("#list-movies-template")
     });
-    var SingleMovieView = function() {};
-    SingleMovieView.prototype = new Compass.View({
+    var SingleMovieView = Compass.View.extend({
         template: $("#single-movie-template")
     });
-    var CreateMovieView = function() {};
-    CreateMovieView.prototype = new Compass.View({
+    var CreateMovieView = Compass.View.extend({
         template: $("#create-movie-template"),
         events: {
             'click #submit': function createMovieEvent() {
@@ -105,8 +103,7 @@ $(document).ready(function() {
             }
         },
     });
-    var UpdateMovieView = function() {};
-    UpdateMovieView.prototype = new Compass.View({
+    var UpdateMovieView = Compass.View.extend({
         template: $("#update-movie-template"),
         events: {
             'click #updateMovieBtn': function createMovieEvent(bindedModel) {
