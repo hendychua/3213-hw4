@@ -236,6 +236,7 @@ $(document).ready(function() {
                                 $("#prevLink").hide();
                                 $("#nextLink").hide();
                                 $("#movies-div").append(currentMovieView.render());
+                                $("abbr.timeago").timeago();
                             },
                             error: function(error) {
                                 console.log(error);
