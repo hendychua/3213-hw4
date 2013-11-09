@@ -174,9 +174,8 @@
 
     };
 
-    var Collection = Compass.Collection = function(model) {
-        this.model = function() {};
-        this.model.prototype = model.prototype;
+    var Collection = Compass.Collection = function() {
+
         this.list = [];
         this.get = function(params) {
             var customUrl = params.customUrl;
@@ -226,8 +225,8 @@
         };
     }
 
-    var Model = Compass.Model = function(url) {
-        this.url = url;
+    var Model = Compass.Model = function() {
+        
         this.obj = {};
         this.get = function(params) {
 		    var id = params.id;
@@ -412,7 +411,7 @@
 		}
 	};
 
-    var extend = function(protoProps, staticProps) {
+    var extend = function(protoProps) {
         var parent = this;
         var child;
         // The constructor function for the new subclass is either defined by you
@@ -425,9 +424,6 @@
                 return parent.apply(this, arguments);
             };
         }
-
-        // Add static properties to the constructor function, if supplied.
-        _.extend(child, parent, staticProps);
 
         // Set the prototype chain to inherit from `parent`, without calling
         // `parent`'s constructor function.

@@ -48,17 +48,21 @@ $(document).ready(function() {
     }
 
     // Instantiate all Models
-    var Movie = function() {};
-    Movie.prototype = new Compass.Model("http://cs3213.herokuapp.com/movies");
+    var Movie = Compass.Model.extend({
+        url: "http://cs3213.herokuapp.com/movies"
+    });
     
-    var Review = function() {};
-    Review.prototype = new Compass.Model("http://cs3213.herokuapp.com/movies/");
+    var Review = Compass.Model.extend({
+        url: "http://cs3213.herokuapp.com/movies/"
+    });
 
     // Instantiate all Collections
-    var MoviesCollection = function() {};
-    MoviesCollection.prototype = new Compass.Collection(Movie);
-    var ReviewsCollection = function() {};
-    ReviewsCollection.prototype = new Compass.Collection(Review);
+    var MoviesCollection = Compass.Collection.extend({
+        model:Movie
+    });
+    var ReviewsCollection = Compass.Collection.extend({
+        model:Review
+    });
 
     // Instantiate all Views
     var ListMoviesView = Compass.View.extend({
