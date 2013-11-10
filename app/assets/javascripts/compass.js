@@ -126,7 +126,7 @@
         }
     }
 
-    var View = Compass.View = function(params) {
+    var View = Compass.View = function() {
         this.model = null;
 		this.element = null;
         
@@ -155,8 +155,8 @@
 
         this.delegateEvents = function() {
             var delegateEventSplitter = /^(\S+)\s*(.*)$/;
-            if (params.events) {
-                var events = params.events;
+            if (this.events) {
+                var events = this.events;
                 for (var key in events) {
                     var method = events[key];
                     if (!_.isFunction(method)) method = this[events[key]];
